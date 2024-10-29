@@ -1,9 +1,10 @@
 import { Client, Collection, Events, GatewayIntentBits, ClientOptions } from "discord.js";
 import 'dotenv/config';
 import { loadSlashCommands} from './utils/utils.js'
-import { Command } from "./types/commands";
 import { glob } from "glob";
 import CustomClient from "./types/custom-client";
+import mongoose from "mongoose";
+import env from "./load-env";
 
 
 /*
@@ -19,13 +20,15 @@ https://discordjs.guide/creating-your-bot/command-deployment.html#guild-commands
 */
 
 
+mongoose.connect(env.MONGO_DB_URI)
+
 
 async function main() {
 	const rootDir = __dirname
 	const commandFiles = await glob(`${rootDir}/commands/*/*{.ts,.js}`, { windowsPathsNoEscape: true })
 	const commands = await loadSlashCommands(commandFiles)
 
-	const token = process.env.DISCORD_APP_TOKEN
+	const token = env.DISCORD_APP_TOKEN
 
 	const client = new CustomClient({intents: [
 		GatewayIntentBits.Guilds,
