@@ -19,8 +19,11 @@ https://discordjs.guide/creating-your-bot/command-deployment.html#guild-commands
 
 */
 
-
 mongoose.connect(env.MONGO_DB_URI)
+
+mongoose.connection.once('open', async function() {
+	console.log(`MongoDB/Mongoose connection established successfully.`)
+})
 
 
 async function main() {
