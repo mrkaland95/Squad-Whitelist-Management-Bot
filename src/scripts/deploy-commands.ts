@@ -2,17 +2,14 @@ import {REST, Routes } from "discord.js";
 import 'dotenv/config';
 import { glob } from "glob";
 import path from "path";
+import env from "../load-env";
 
 
-// const { clientID, guildID, discordToken } = { process.env.}
-let clientID = process.env.DISCORD_APP_ID
-let guildID = process.env.GUILD_ID
-const appToken = process.env.DISCORD_APP_TOKEN
-
-if (!appToken
-    || !guildID
-    || !clientID
+if (!env.DISCORD_APP_ID
+    || !env.DISCORD_APP_TOKEN
+    || !env.GUILD_ID
 ) {
+    console.error('Missing required fields in the .env file.')
     process.exit(1)
 }
 
@@ -24,24 +21,23 @@ async function main() {
     const commandFiles = await glob(`${rootPath}/commands/*/*{.ts,.js}`, { windowsPathsNoEscape: true })
 
     for (const filePath of commandFiles) {
-        const command = require(filePath)
-		if ('data' in command && 'execute' in command) {
+        const command = require(filePath)?.default
+
+        console.log(command)
+
+		if (command?.data && command?.execute) {
 			commands.push(command.data.toJSON());
 		} else {
 			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
 		}
     }
 
-    clientID = clientID ? clientID : ""
-    guildID = guildID ? guildID : ""
-
-    // @ts-ignore
-    const rest = new REST().setToken(appToken)
+    const rest = new REST().setToken(env.DISCORD_APP_TOKEN)
     try {
         console.log(`Refreshing ${commands.length} slash commands.`)
 
         const data = await rest.put(
-            Routes.applicationGuildCommands(clientID, guildID),
+            Routes.applicationGuildCommands(env.DISCORD_APP_ID, env.GUILD_ID),
             {body: commands},
         )
         // @ts-ignore
