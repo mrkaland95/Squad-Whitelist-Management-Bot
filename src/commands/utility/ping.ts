@@ -1,6 +1,6 @@
-import {CommandInteraction, SlashCommandBuilder} from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
 
-module.exports = {
+export default {
 	data: new SlashCommandBuilder()
 		.setName('ping')
 		.setDescription('Replies with Pong!'),
