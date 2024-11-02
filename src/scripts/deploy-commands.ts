@@ -23,8 +23,6 @@ async function main() {
     for (const filePath of commandFiles) {
         const command = require(filePath)?.default
 
-        console.log(command)
-
 		if (command?.data && command?.execute) {
 			commands.push(command.data.toJSON());
 		} else {

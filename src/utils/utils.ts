@@ -2,7 +2,7 @@ import { Command } from "../types/commands";
 import { Collection } from "discord.js";
 
 export async function importFile(filePath: string) {
-  return (await import(filePath))?.default;
+  return require(filePath)?.default
 }
 
 
