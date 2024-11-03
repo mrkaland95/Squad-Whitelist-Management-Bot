@@ -49,6 +49,9 @@ async function main() {
 
 		if (!user) {
 			const newUser = await initUserInDB(interaction.user)
+			if (newUser) {
+				console.log(`Successfully initiated database entry for discord user: ${interaction.user.globalName}`)
+			}
 		}
 
 		const command = client.commands.get(interaction.commandName)
