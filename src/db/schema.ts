@@ -27,9 +27,9 @@ const userSchema = new Schema<IUser>({
     ],
     AdminRole64ID: { type: String, required: false },
     Enabled: { type: Boolean, required: true },
-    TimeAdded: { type: Date, default: Date.now, immutable: true },
-    LastUpdated: { type: Date, default: Date.now, required: true },
-});
+    }, {
+        timestamps: { createdAt: 'TimeAdded', updatedAt: 'LastUpdated'}
+    });
 
 
 export const UsersDB = mongoose.model<IUser>("User", userSchema);
@@ -46,8 +46,6 @@ export async function initUserInDB(discordUser: User) {
         Whitelist64IDs: [],
         AdminRole64ID: null,
         Enabled: true,
-        TimeAdded: Date.now(),
-        LastUpdated: Date.now()
     })
     return newUser.save()
 }
