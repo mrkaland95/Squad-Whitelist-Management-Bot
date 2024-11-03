@@ -11,7 +11,7 @@ export function generateWhitelistEmbed(steamIDs: { steamID: string; name?: strin
         .setTitle(`Whitelisted SteamIDs for user "${user.globalName}"`)
         .setTimestamp(Date.now())
 
-    if (!steamIDs || !steamIDs.length) {
+    if (!steamIDs.length) {
         embed.setDescription(`No steamIDs to display`)
         return embed
     }
@@ -23,7 +23,7 @@ export function generateWhitelistEmbed(steamIDs: { steamID: string; name?: strin
         const steamID = steamIDs[i].steamID
         const name = steamIDs[i].name
 
-        formattedSteamIDs += `${i + 1}.) ${steamID}`
+        formattedSteamIDs += `${i + 1}). ${steamID}`
         if (name) {
             formattedNames += `${name}`
         }

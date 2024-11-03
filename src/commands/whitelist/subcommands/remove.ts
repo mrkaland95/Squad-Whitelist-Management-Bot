@@ -1,10 +1,10 @@
-import {UsersDB} from "../../../db/schema";
+import { UsersDB } from "../../../db/schema";
 import {
     AutocompleteInteraction,
     ChatInputCommandInteraction,
     SlashCommandSubcommandBuilder
 } from "discord.js";
-import {generateWhitelistEmbed} from "../utils/utils";
+import { generateWhitelistEmbed } from "../utils/utils";
 
 
 export default {
@@ -18,7 +18,7 @@ export default {
 
 
     async execute(interaction: ChatInputCommandInteraction) {
-        const user = await UsersDB.findOne({DiscordID: interaction.user.id})
+        const user = await UsersDB.findOne({ DiscordID: interaction.user.id })
         const steamIDs = user?.Whitelist64IDs
         const steamIDToRemove = interaction.options.getString('steamid')
 
