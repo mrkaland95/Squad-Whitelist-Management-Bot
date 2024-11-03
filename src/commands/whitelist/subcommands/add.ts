@@ -1,5 +1,5 @@
 import { UsersDB } from "../../../db/schema";
-import { CommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import {ChatInputCommandInteraction, SlashCommandSubcommandBuilder} from "discord.js";
 
 export default {
         data: new SlashCommandSubcommandBuilder()
@@ -18,24 +18,24 @@ export default {
         ),
 
 
-    async execute(interaction: CommandInteraction) {
-        // @ts-ignore
-        const steamID: string = interaction.options.getString('steamid')
-        // @ts-ignore
-        const name: string | undefined = interaction.options.getString('name')
+    async execute(interaction: ChatInputCommandInteraction) {
+        const steamID = interaction.options.getString('steamid')
+        const name = interaction.options.getString('name')
 
         const steamID64Regex  = /^7656119\d{10}$/;
 
-        const validFormatting = steamID64Regex.test(steamID)
+        if (!steamID) {
+            return await interaction.followUp({content: `Most supply a value for SteamID`, ephemeral: true})
+        }
 
         // TODO add a message explaining how to find steamID64id
-        if (!validFormatting) {
+        if (!steamID64Regex.test(steamID)) {
             const msg =
                 `The given steamID: \`${steamID}\` is not a correctly formatted steamID. A steamID is a 17 digit number.\n`+
                 `TODO: Procedure how to find steamID will be added here`
             return await interaction.followUp({ content: msg, ephemeral: true})
         }
-
+        // TODO add handling if user doesn't exist, i.e initialize them here.
         const user = await UsersDB.findOne({ DiscordID: interaction.user.id })
         if (user) {
             const steamIDs = user.Whitelist64IDs
@@ -54,14 +54,20 @@ export default {
                 }
 
                 await UsersDB.findOneAndUpdate({ DiscordID: user.DiscordID }, {
-                    Whitelist64IDs: steamIDs
+                    Whitelist64IDs: steamIDs,
+                    LastUpdated: Date.now()
                 })
-                return interaction.followUp({ content: `Succesfully added steamID: ${steamID}`, ephemeral: true })
+                return interaction.followUp({ content: `Succesfully added steamID: \`${steamID}\``, ephemeral: true })
             }
         }
     }
 }
 
+
+/*
+TODO implement this
+Meant to be an message/set of embeds describing how to find a user's Steam64ID.
+ */
 function incorrectFormatEmbed() {
 
 }
