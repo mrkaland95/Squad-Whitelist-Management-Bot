@@ -51,7 +51,7 @@ export default {
 
 
         return await interaction.followUp({
-            content: `Successfully removed \`${steamIDToRemove}\` from your whitelisted IDs.`,
+            content: `Successfully removed steamID \`${steamIDToRemove}\` from your whitelisted IDs.`,
             ephemeral: true
         })
     },
@@ -65,9 +65,18 @@ export default {
             return await interaction.respond([])
         }
 
-        const filtered = steamIDs.filter(steamID => steamID.steamID.includes(focusedOption.value))
+        const matchedIDs = steamIDs.filter(steamID => steamID.steamID.includes(focusedOption.value))
+        const processedIDS = []
+        for (const id of matchedIDs) {
+            if (id.name) {
+                processedIDS.push({ name: `${id.steamID} - Name: ${id.name}`, value: id.steamID})
+            } else {
+                processedIDS.push({ name: id.steamID, value: id.steamID })
+            }
+        }
+
         await interaction.respond(
-            filtered.map(entry => ({name: entry.steamID, value: entry.steamID}))
+            processedIDS
         )
     }
 }
