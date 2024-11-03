@@ -1,6 +1,6 @@
 import {AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder} from "discord.js";
 import add from "./subcommands/add"
-import view from "./subcommands/view";
+import view from "./subcommands/show";
 import remove from "./subcommands/remove";
 
 
@@ -23,9 +23,6 @@ export default {
         ]
 
         for (const cmd of subCommands) {
-            // The interaction.options object has a "getSubcommand" method, but for some reason TypeScript
-            // Does not play nice with it, so we do this instead.
-
             if (cmd.data.name === interaction.options.getSubcommand()) {
                 await cmd.execute(interaction)
             }

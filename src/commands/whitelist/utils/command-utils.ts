@@ -1,4 +1,4 @@
-import {EmbedBuilder, User} from "discord.js";
+import { EmbedBuilder, User } from "discord.js";
 
 /**
  * Generates an embed used for displaying a Discord user's whitelisted steamIDs.
@@ -23,18 +23,28 @@ export function generateWhitelistEmbed(steamIDs: { steamID: string; name?: strin
         const steamID = steamIDs[i].steamID
         const name = steamIDs[i].name
 
-        formattedSteamIDs += `${i + 1}). ${steamID}`
+        formattedSteamIDs += `${i + 1}.) ${steamID}`
         if (name) {
             formattedNames += `${name}`
         }
+
         formattedSteamIDs += `\n`
         formattedNames += `\n`
     }
 
     embed.addFields([
-        { name: 'SteamID', value: formattedSteamIDs, inline: true},
-        { name: 'Name', value: formattedNames, inline: true}
+        { name: 'SteamID', value: formattedSteamIDs, inline: true },
+        { name: 'Name', value: formattedNames, inline: true }
     ])
 
     return embed
+}
+
+
+/*
+TODO implement this
+Meant to be an message/set of embeds describing how to find a user's Steam64ID.
+ */
+function incorrectFormatEmbed() {
+
 }

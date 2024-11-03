@@ -4,56 +4,54 @@ import {
     ChatInputCommandInteraction,
     SlashCommandSubcommandBuilder
 } from "discord.js";
-import { generateWhitelistEmbed } from "../utils/utils";
+import { generateWhitelistEmbed } from "../utils/command-utils";
 
 
 export default {
     data: new SlashCommandSubcommandBuilder()
         .setName('remove')
-        .setDescription(`Removes a given SteamID from a user's saved whitelist.`)
+        .setDescription(`Removes a SteamID from a users saved whitelist slots.`)
         .addStringOption(option =>
             option.setName('steamid')
                 .setDescription('steamID to remove')
+                .setRequired(true)
                 .setAutocomplete(true)),
 
 
     async execute(interaction: ChatInputCommandInteraction) {
         const user = await UsersDB.findOne({ DiscordID: interaction.user.id })
         const steamIDs = user?.Whitelist64IDs
-        const steamIDToRemove = interaction.options.getString('steamid')
+        const steamID = interaction.options.getString('steamid')
+
+        if (!steamID) {
+            return await interaction.followUp({
+                content: `You must supply a value.`,
+                ephemeral: true
+            })
+        }
 
         if (!steamIDs) {
             return await interaction.followUp({
                 content: `You do not have any whitelisted steamIDs.`,
-                ephemeral: true
             })
         }
 
-        if (!steamIDToRemove) {
-            return await interaction.followUp({
-                content: `You must supply a value to remove.`,
-                ephemeral: true
-            })
-        }
-
-        const matchingSteamIDs = steamIDs.filter(item => item.steamID !== steamIDToRemove)
+        const matchingSteamIDs = steamIDs.filter(item => item.steamID !== steamID)
 
         if (matchingSteamIDs.length === steamIDs.length) {
             return interaction.followUp({
-                content: `The given steamID \`${steamIDToRemove}\` does not exist among your whitelist IDs.`,
-                ephemeral: true
+                content: `The given steamID \`${steamID}\` does not exist among your whitelist IDs.`,
             })
         }
 
         await UsersDB.findOneAndUpdate({ DiscordID: user.DiscordID }, {
             Whitelist64IDs: matchingSteamIDs,
-            LastUpdated: Date.now()
         })
 
         const embed = generateWhitelistEmbed(matchingSteamIDs, interaction.user)
 
         return await interaction.followUp({
-            content: `Successfully removed steamID \`${steamIDToRemove}\` from your whitelisted IDs.\n` +
+            content: `Successfully removed steamID \`${steamID}\` from your whitelisted IDs.\n` +
             `Remaining IDs: \n`,
             ephemeral: true,
             embeds: [embed]

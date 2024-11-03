@@ -1,7 +1,8 @@
 import { UsersDB } from "../../../db/schema";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
-import { generateWhitelistEmbed } from "../utils/utils";
-import { steamID64Regex } from "../../../utils/utils";
+import { generateWhitelistEmbed } from "../utils/command-utils";
+import {incorrectSteamIDFormatResponse, steamID64Regex} from "../../../utils/utils";
+import env from "../../../load-env";
 
 export default {
     data: new SlashCommandSubcommandBuilder()
@@ -25,21 +26,30 @@ export default {
         const name = interaction.options.getString('name')
 
         if (!steamID) {
-            return await interaction.followUp({ content: `Most supply a value for SteamID`, ephemeral: true })
-        }
-
-        // TODO add a message explaining how to find steamID64
-        if (!steamID64Regex.test(steamID)) {
-            const msg =
-                `The given steamID: \`${steamID}\` is not a correctly formatted steamID. A steamID is a 17 digit number.\n`+
-                `TODO: Procedure how to find steamID will be added here`
-            return await interaction.followUp({ content: msg, ephemeral: true})
+            return await interaction.followUp({
+                content: `Please input a value for SteamID.`,
+            })
         }
 
         const user = await UsersDB.findOne({ DiscordID: interaction.user.id })
 
         if (!user) {
+            await interaction.followUp({
+                content: `Internal server error occurred`
+            })
+            // I.e. this is meant to be equivalent to an assert, i.e a logic/programmer error that needs to be fixed if it occurs.
+            // We must have initialized a user at this point.
             throw Error(`User not yet initialized in DB by the time data was attempted to be changed. A user must be initialized in the CB beforehand.`)
+        }
+
+        if (user.Whitelist64IDs.length >= Number(env.MAX_WHITELIST_SLOTS)) {
+            return await interaction.followUp({
+                content: `You have hit your limit of whitelisted steamIDs(${user.Whitelist64IDs.length}/${env.MAX_WHITELIST_SLOTS}). Please remove some before attempting to add new ones.`
+            })
+        }
+
+        if (!steamID64Regex.test(steamID)) {
+            return await incorrectSteamIDFormatResponse(interaction, steamID)
         }
 
         const steamIDs = user.Whitelist64IDs
@@ -47,7 +57,7 @@ export default {
 
         if (exists) {
             return await interaction.followUp({
-                content: `❌ The SteamID \`${steamID}\` is already whitelisted.`,
+                content: `❌ The SteamID \`${steamID}\` is already among your whitelisted IDs.`,
                 ephemeral: true
             });
         }
@@ -60,7 +70,6 @@ export default {
 
             const newUser = await UsersDB.findOneAndUpdate({ DiscordID: user.DiscordID }, {
                 Whitelist64IDs: steamIDs,
-                LastUpdated: Date.now()
             })
 
             const embed = generateWhitelistEmbed(steamIDs, interaction.user)
@@ -77,10 +86,3 @@ export default {
 }
 
 
-/*
-TODO implement this
-Meant to be an message/set of embeds describing how to find a user's Steam64ID.
- */
-function incorrectFormatEmbed() {
-
-}

@@ -1,4 +1,9 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder} from "discord.js";
+import {
+  AutocompleteInteraction,
+  ChatInputCommandInteraction,
+  SlashCommandBuilder,
+  SlashCommandSubcommandBuilder
+} from "discord.js";
 
 
 export type Command = {
@@ -6,3 +11,10 @@ export type Command = {
   execute: (a: ChatInputCommandInteraction) => any,
   autocomplete?: (a: AutocompleteInteraction) => any
 }
+
+export type Subcommand = {
+  data: SlashCommandSubcommandBuilder;
+  execute: (a: ChatInputCommandInteraction) => any,
+  autocomplete?: (a: AutocompleteInteraction) => any
+}
+

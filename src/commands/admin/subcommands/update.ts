@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { Subcommand } from "../../../types/commands";
-import {steamID64Regex} from "../../../utils/utils";
+import {incorrectSteamIDFormatResponse, steamID64Regex} from "../../../utils/utils";
 import {UsersDB} from "../../../db/schema";
 
 const slashCommand = new SlashCommandSubcommandBuilder()
@@ -24,12 +24,7 @@ async function execute(interaction: ChatInputCommandInteraction) {
 
     // TODO refactor this out to it's own function to handle the few multiple instances where this is required.
     if (!steamID64Regex.test(steamID)) {
-        const msg =
-            `The given steamID: \`${steamID}\` is not a correctly formatted steamID. A steamID is a 17 digit number.\n`+
-            `TODO: Procedure how to find steamID will be added here`
-        return await interaction.followUp({
-            content: msg,
-        })
+        return await incorrectSteamIDFormatResponse(interaction, steamID)
     }
 
     const user = await UsersDB.findOneAndUpdate({
