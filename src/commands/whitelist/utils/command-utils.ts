@@ -1,4 +1,4 @@
-import { EmbedBuilder, User } from "discord.js";
+import {ActionRowBuilder, ButtonBuilder, EmbedBuilder, User, ButtonStyle} from "discord.js";
 
 /**
  * Generates an embed used for displaying a Discord user's whitelisted steamIDs.
@@ -39,6 +39,16 @@ export function generateWhitelistEmbed(steamIDs: { steamID: string; name?: strin
 
     return embed
 }
+
+
+export const viewWhitelistedIDsButton = new ActionRowBuilder<ButtonBuilder>()
+    .addComponents(
+        new ButtonBuilder()
+            .setCustomId('view_steam_ids')
+            .setLabel('View IDs')
+            .setStyle(ButtonStyle.Secondary)
+    )
+
 
 
 /*

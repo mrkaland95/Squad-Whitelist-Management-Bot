@@ -1,7 +1,7 @@
 import {
     SlashCommandSubcommandBuilder, ChatInputCommandInteraction,
 } from "discord.js";
-import { UsersDB } from "../../../db/schema";
+import {retrieveDiscordUser} from "../../../db/schema";
 import { generateWhitelistEmbed } from "../utils/command-utils";
 
 
@@ -11,7 +11,7 @@ export default {
         .setDescription(`Retrieves the whitelisted IDs by the caller.`),
 
     async execute(interaction: ChatInputCommandInteraction) {
-        const user = await UsersDB.findOne({ DiscordID: interaction.user.id })
+        const user = await retrieveDiscordUser(interaction.user)
         const steamIDs = user?.Whitelist64IDs
 
         /*

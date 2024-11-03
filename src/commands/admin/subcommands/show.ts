@@ -1,21 +1,14 @@
 import {ChatInputCommandInteraction, SlashCommandSubcommandBuilder} from "discord.js";
 import {Subcommand} from "../../../types/commands";
-import {UsersDB} from "../../../db/schema";
+import {retrieveDiscordUser, UsersDB} from "../../../db/schema";
+import {loadUsers, usersCache} from "../../../cache";
 
 const slashCommand = new SlashCommandSubcommandBuilder()
     .setName('show')
     .setDescription(`Show a user's steamID used for in-game admin permissions.`);
 
 async function execute(interaction: ChatInputCommandInteraction) {
-    const user = await UsersDB.findOne({DiscordID: interaction.user.id})
-
-    if (!user) {
-        await interaction.followUp({
-            content: `Internal server error occurred`
-        })
-        throw Error(`User not yet initialized in DB by the time data was attempted to be changed. A user must be initialized in the CB beforehand.`)
-    }
-
+    const user = await retrieveDiscordUser(interaction.user)
     const steamID = user.AdminRole64ID
 
     if (!steamID) {

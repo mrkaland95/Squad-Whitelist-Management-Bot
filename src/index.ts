@@ -1,11 +1,13 @@
-import {Client, Collection, Events, GatewayIntentBits, ClientOptions, AutocompleteInteraction} from "discord.js";
+import {Events, GatewayIntentBits} from "discord.js";
 import 'dotenv/config';
-import { loadSlashCommands} from './utils/utils.js'
-import { glob } from "glob";
+import {loadSlashCommands} from './utils/utils.js'
+import {glob} from "glob";
 import CustomClient from "./types/custom-client";
 import mongoose from "mongoose";
 import env from "./load-env";
 import {initUserInDB, UsersDB} from "./db/schema";
+import {loadUsers, usersCache} from "./cache";
+import {generateWhitelistEmbed} from "./commands/whitelist/utils/command-utils";
 
 
 /*
@@ -26,21 +28,19 @@ mongoose.connection.once('open', async function() {
 	console.log(`MongoDB/Mongoose connection established successfully.`)
 })
 
+const token = env.DISCORD_APP_TOKEN
+
+const client = new CustomClient({intents: [
+	GatewayIntentBits.Guilds,
+	GatewayIntentBits.MessageContent,
+	GatewayIntentBits.GuildMembers,
+]});
 
 async function main() {
-	const rootDir = __dirname
-	const commandFiles = await glob(`${rootDir}/commands/*/*{.ts,.js}`, { windowsPathsNoEscape: true })
-	const commands = await loadSlashCommands(commandFiles)
+	const commandFiles = await glob(`${__dirname}/commands/*/*{.ts,.js}`, { windowsPathsNoEscape: true })
+	client.commands = await loadSlashCommands(commandFiles)
 
-	const token = env.DISCORD_APP_TOKEN
-
-	const client = new CustomClient({intents: [
-		GatewayIntentBits.Guilds,
-		GatewayIntentBits.MessageContent,
-		GatewayIntentBits.GuildMembers,
-	]});
-
-	client.commands = commands
+	await loadUsers()
 
 	client.on(Events.InteractionCreate, async interaction  => {
 		if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
@@ -86,9 +86,37 @@ async function main() {
 				}
 			}
 			else {
-				// This is an error meant to catch developer errors, not runtime errors.
+				// This is meant to catch developer errors, not runtime errors.
 				throw Error(`Command has autocomplete enabled, but no autocomplete function defined.`)
 			}
+		}
+	})
+
+	client.on(Events.InteractionCreate, async interaction => {
+		if (!interaction.isButton()) return
+
+		await interaction.deferReply({
+			ephemeral: true
+		})
+
+		/*
+		It's a bit dumb to hardcode the interaction like this, but for the moment there is only one button for the entire bot.
+		Should more buttons be added, refactor so these interactions are handled dynamically.
+		 */
+
+		if (interaction.customId === 'view_steam_ids') {
+			const user = usersCache.get(interaction.user.id)
+			if (!user) {
+				return await interaction.followUp({
+					content: `Internal Error occurred in the bot.`
+				})
+			}
+
+			const embed = generateWhitelistEmbed(user.Whitelist64IDs, interaction.user)
+
+			return await interaction.followUp({
+				embeds: [embed]
+			})
 		}
 	})
 

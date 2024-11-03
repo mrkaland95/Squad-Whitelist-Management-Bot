@@ -1,10 +1,11 @@
-import { UsersDB } from "../../../db/schema";
+import {retrieveDiscordUser, UsersDB} from "../../../db/schema";
 import {
     AutocompleteInteraction,
     ChatInputCommandInteraction,
     SlashCommandSubcommandBuilder
 } from "discord.js";
-import { generateWhitelistEmbed } from "../utils/command-utils";
+import {viewWhitelistedIDsButton} from "../utils/command-utils";
+import { loadUsers } from "../../../cache";
 
 
 export default {
@@ -19,7 +20,7 @@ export default {
 
 
     async execute(interaction: ChatInputCommandInteraction) {
-        const user = await UsersDB.findOne({ DiscordID: interaction.user.id })
+        const user = await retrieveDiscordUser(interaction.user)
         const steamIDs = user?.Whitelist64IDs
         const steamID = interaction.options.getString('steamid')
 
@@ -48,20 +49,19 @@ export default {
             Whitelist64IDs: matchingSteamIDs,
         })
 
-        const embed = generateWhitelistEmbed(matchingSteamIDs, interaction.user)
+        // Update the cache
+        await loadUsers()
 
         return await interaction.followUp({
-            content: `Successfully removed steamID \`${steamID}\` from your whitelisted IDs.\n` +
-            `Remaining IDs: \n`,
-            ephemeral: true,
-            embeds: [embed]
+            content: `Successfully removed steamID \`${steamID}\` from your whitelisted IDs.\n`,
+            components: [viewWhitelistedIDsButton]
         })
     },
 
     async autocomplete(interaction: AutocompleteInteraction) {
         const focusedOption = interaction.options.getFocused(true)
-        const user = await UsersDB.findOne({DiscordID: interaction.user.id})
-        const steamIDs = user?.Whitelist64IDs
+        const user = await retrieveDiscordUser(interaction.user)
+        const steamIDs = user.Whitelist64IDs
 
         if (!steamIDs) {
             return await interaction.respond([])

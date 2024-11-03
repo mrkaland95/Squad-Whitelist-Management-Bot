@@ -1,15 +1,14 @@
 import mongoose, { Document, Schema } from "mongoose";
-import {User} from "discord.js";
+import { User } from "discord.js";
+import { loadUsers, usersCache} from "../cache";
 
-interface IUser extends Document {
+export interface IUser extends Document {
     DiscordID: string;
     DiscordName: string;
     Roles: string[];
     Whitelist64IDs: { steamID: string; name?: string }[];
     AdminRole64ID?: string;
     Enabled: boolean;
-    TimeAdded: Date;
-    LastUpdated: Date;
 }
 
 /**
@@ -29,7 +28,7 @@ const userSchema = new Schema<IUser>({
     Enabled: { type: Boolean, required: true },
     }, {
         timestamps: true
-    });
+});
 
 
 export const UsersDB = mongoose.model<IUser>("User", userSchema);
@@ -48,4 +47,17 @@ export async function initUserInDB(discordUser: User) {
         Enabled: true,
     })
     return newUser.save()
+}
+
+export async function retrieveDiscordUser(discordUser: User) {
+    let user = usersCache.get(discordUser.id)
+    if (!user) {
+        const users = await loadUsers()
+        user = users.get(discordUser.id)
+    }
+    if (!user) {
+        user = await initUserInDB(discordUser)
+    }
+
+    return user
 }
