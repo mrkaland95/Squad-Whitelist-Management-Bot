@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import {User} from "discord.js";
 
 interface IUser extends Document {
     DiscordID: string;
@@ -11,8 +12,9 @@ interface IUser extends Document {
     LastUpdated: Date;
 }
 
-
-
+/**
+ *
+ */
 const userSchema = new Schema<IUser>({
     DiscordID: { type: String, unique: true, required: true },
     DiscordName: { type: String, required: true },
@@ -23,16 +25,29 @@ const userSchema = new Schema<IUser>({
             name: { type: String, required: false },
         },
     ],
-    AdminRole64ID: { type: [String], required: false },
+    AdminRole64ID: { type: String, required: false },
     Enabled: { type: Boolean, required: true },
     TimeAdded: { type: Date, default: Date.now, immutable: true },
     LastUpdated: { type: Date, default: Date.now, required: true },
 });
 
 
-
-async function initUserInDB(discordID: string) {
-
-}
-
 export const UsersDB = mongoose.model<IUser>("User", userSchema);
+
+/**
+ * Utility function for initializing a discord user if one doesn't exist in the database.
+ * @param discordUser An object representing a discord user.
+ */
+export async function initUserInDB(discordUser: User) {
+    const newUser = new UsersDB({
+        DiscordID: discordUser.id,
+        DiscordName: discordUser.globalName,
+        Roles: [],
+        Whitelist64IDs: [],
+        AdminRole64ID: null,
+        Enabled: true,
+        TimeAdded: Date.now(),
+        LastUpdated: Date.now()
+    })
+    return newUser.save()
+}

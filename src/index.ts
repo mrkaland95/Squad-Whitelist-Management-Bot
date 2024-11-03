@@ -5,6 +5,7 @@ import { glob } from "glob";
 import CustomClient from "./types/custom-client";
 import mongoose from "mongoose";
 import env from "./load-env";
+import {initUserInDB, UsersDB} from "./db/schema";
 
 
 /*
@@ -43,6 +44,12 @@ async function main() {
 
 	client.on(Events.InteractionCreate, async interaction  => {
 		if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
+
+		const user = await UsersDB.findOne({DiscordID: interaction.user.id})
+
+		if (!user) {
+			const newUser = await initUserInDB(interaction.user)
+		}
 
 		const command = client.commands.get(interaction.commandName)
 
