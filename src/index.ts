@@ -1,4 +1,4 @@
-import { Client, Collection, Events, GatewayIntentBits, ClientOptions } from "discord.js";
+import {Client, Collection, Events, GatewayIntentBits, ClientOptions, AutocompleteInteraction} from "discord.js";
 import 'dotenv/config';
 import { loadSlashCommands} from './utils/utils.js'
 import { glob } from "glob";
@@ -41,28 +41,45 @@ async function main() {
 
 	client.commands = commands
 
-	client.on(Events.InteractionCreate, async interaction => {
-		if (!interaction.isChatInputCommand()) return;
+	client.on(Events.InteractionCreate, async interaction  => {
+		if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
 
-		const command = client.commands.get(interaction.commandName);
+		const command = client.commands.get(interaction.commandName)
+
 		if (!command) {
 			console.error(`No command matching ${interaction.commandName} was found.`);
 			return;
 		}
 
-		try {
-			await command.execute(interaction);
-		} catch (error) {
-			console.log(`There was an error while executing command: ${interaction.commandName}`)
-			console.error(error);
-			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-			} else {
-				await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+
+		if (interaction.isChatInputCommand()) {
+			try {
+				await command.execute(interaction);
+			} catch (error) {
+				console.error(`There was an error while executing command: ${interaction.commandName}`)
+				console.error(error);
+				if (interaction.replied || interaction.deferred) {
+					await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+				} else {
+					await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+				}
 			}
 		}
 
+		else if (interaction.isAutocomplete()) {
+			if (command.autocomplete) {
+				try {
+					await command.autocomplete(interaction);
 
+				} catch (error) {
+					console.error(error);
+				}
+			}
+			else {
+				// This is an error meant to catch developer errors, not runtime errors.
+				throw Error(`Command has autocomplete enabled, but no autocomplete function defined.`)
+			}
+		}
 	})
 
 	client.once(Events.ClientReady, readyClient => {
