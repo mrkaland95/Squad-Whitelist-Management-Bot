@@ -1,5 +1,6 @@
 import { UsersDB } from "../../../db/schema";
 import {ChatInputCommandInteraction, SlashCommandSubcommandBuilder} from "discord.js";
+import {generateWhitelistEmbed} from "../utils/utils";
 
 export default {
         data: new SlashCommandSubcommandBuilder()
@@ -53,11 +54,24 @@ export default {
                     steamIDs.push({steamID: steamID})
                 }
 
-                await UsersDB.findOneAndUpdate({ DiscordID: user.DiscordID }, {
+                const newUser = await UsersDB.findOneAndUpdate({ DiscordID: user.DiscordID }, {
                     Whitelist64IDs: steamIDs,
                     LastUpdated: Date.now()
                 })
-                return interaction.followUp({ content: `Succesfully added steamID: \`${steamID}\``, ephemeral: true })
+
+                // let newWhitelist = newUser?.Whitelist64IDs
+                // if (!newWhitelist) {
+                //    newWhitelist = []
+                // }
+
+                const embed = generateWhitelistEmbed(steamIDs, interaction.user)
+
+                return interaction.followUp({
+                    content: `Succesfully added steamID: \`${steamID}\`\n`+
+                    `NOTE: This bot does not know whether the SteamID exists, just that it's correctly formatted.`,
+                    ephemeral: true,
+                    embeds: [embed]
+                })
             }
         }
     }

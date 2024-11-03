@@ -4,6 +4,7 @@ import {
     ChatInputCommandInteraction,
     SlashCommandSubcommandBuilder
 } from "discord.js";
+import {generateWhitelistEmbed} from "../utils/utils";
 
 
 export default {
@@ -39,7 +40,7 @@ export default {
 
         if (matchingSteamIDs.length === steamIDs.length) {
             return interaction.followUp({
-                content: `The given steamID does not exist among your whitelist IDs.`,
+                content: `The given steamID \`${steamIDToRemove}\` does not exist among your whitelist IDs.`,
                 ephemeral: true
             })
         }
@@ -49,10 +50,13 @@ export default {
             LastUpdated: Date.now()
         })
 
+        const embed = generateWhitelistEmbed(matchingSteamIDs, interaction.user)
 
         return await interaction.followUp({
-            content: `Successfully removed steamID \`${steamIDToRemove}\` from your whitelisted IDs.`,
-            ephemeral: true
+            content: `Successfully removed steamID \`${steamIDToRemove}\` from your whitelisted IDs.\n` +
+            `Remaining IDs: \n`,
+            ephemeral: true,
+            embeds: [embed]
         })
     },
 
@@ -69,7 +73,7 @@ export default {
         const processedIDS = []
         for (const id of matchedIDs) {
             if (id.name) {
-                processedIDS.push({ name: `${id.steamID} - Name: ${id.name}`, value: id.steamID})
+                processedIDS.push({ name: `${id.steamID} - "${id.name}"`, value: id.steamID})
             } else {
                 processedIDS.push({ name: id.steamID, value: id.steamID })
             }
