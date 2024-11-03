@@ -28,7 +28,7 @@ const userSchema = new Schema<IUser>({
     AdminRole64ID: { type: String, required: false },
     Enabled: { type: Boolean, required: true },
     }, {
-        timestamps: { createdAt: 'TimeAdded', updatedAt: 'LastUpdated'}
+        timestamps: true
     });
 
 
