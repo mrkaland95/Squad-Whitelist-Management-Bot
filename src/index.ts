@@ -32,7 +32,13 @@ const client = new CustomClient({intents: [
 	GatewayIntentBits.GuildMembers,
 ]});
 
+mongoose.connection.once('open', async function() {
+	console.log(`MongoDB/Mongoose connection established successfully.`)
+})
+
 async function main() {
+	await mongoose.connect(env.MONGO_DB_URL)
+
 	const commandFiles = await glob(`${__dirname}/commands/*/*{.ts,.js}`, { windowsPathsNoEscape: true })
 	const eventFiles = await glob(`${__dirname}/events/*{.ts, .js]}`, { windowsPathsNoEscape: true })
 
@@ -41,7 +47,8 @@ async function main() {
 
 	await refreshUsersCache()
 
-		const user = await UsersDB.findOne({DiscordID: interaction.user.id})
+	// Periodically update the state of the cache
+	setInterval(refreshUsersCache, CACHE_UPDATE_INTERVAL_SECONDS * 1000)
 
 	for (const event of events) {
 		if (event.once) {
