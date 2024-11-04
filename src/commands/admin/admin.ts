@@ -1,11 +1,11 @@
-import {ChatInputCommandInteraction, CommandInteraction, SlashCommandBuilder} from "discord.js";
+import {ChatInputCommandInteraction, SlashCommandBuilder} from "discord.js";
 import { Subcommand } from "../../types/commands";
 import * as fs from "fs";
 import path from "path";
 
 const slashCommand = new SlashCommandBuilder()
     .setName('admin')
-    .setDescription(`Managed a user`);
+    .setDescription(`Manages the steamID for admins.`);
 
 
 const subCommandFiles = fs.readdirSync(path.join(__dirname, 'subcommands')).filter(file => (file.endsWith('.js') || file.endsWith('.ts')))

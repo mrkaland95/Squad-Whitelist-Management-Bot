@@ -1,4 +1,4 @@
-import { Events, GatewayIntentBits } from "discord.js";
+import { Events, GatewayIntentBits, TextChannel} from "discord.js";
 import 'dotenv/config';
 import { loadEvents, loadSlashCommands } from './utils/utils.js'
 import { glob } from "glob";
@@ -21,6 +21,7 @@ https://discordjs.guide/creating-your-bot/command-deployment.html#guild-commands
 */
 
 
+export let discordLoggingChannel: TextChannel | null;
 
 
 const token = env.DISCORD_APP_TOKEN
@@ -38,10 +39,8 @@ mongoose.connection.once('open', async function() {
 
 async function main() {
 	await mongoose.connect(env.MONGO_DB_URL)
-
 	const commandFiles = await glob(`${__dirname}/commands/*/*{.ts,.js}`, { windowsPathsNoEscape: true })
-	const eventFiles = await glob(`${__dirname}/events/*{.ts, .js]}`, { windowsPathsNoEscape: true })
-
+	const eventFiles = await glob(`${__dirname}/events/*{.ts,.js}`, { windowsPathsNoEscape: true })
 	const events = await loadEvents(eventFiles)
 	client.commands = await loadSlashCommands(commandFiles)
 
@@ -61,10 +60,23 @@ async function main() {
 	}
 
 
-
-	client.once(Events.ClientReady, readyClient => {
+	client.once(Events.ClientReady, async readyClient => {
 		console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+
+		// This is admittedly some pretty dirty code, but ensures that logging is only active if the channel is valid
+		if (env.DISCORD_LOGGING_CHANNEL_ID) {
+			try {
+				const channel = await client.channels.fetch(env.DISCORD_LOGGING_CHANNEL_ID)
+				if (channel) {
+					discordLoggingChannel = ( channel as TextChannel )
+				}
+			} catch (e) {
+				console.error(`Error when attempting to fetch logging channel`)
+				console.error(e)
+			}
+		}
 	});
+
 
 	await client.login(token);
 }

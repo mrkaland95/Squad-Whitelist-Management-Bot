@@ -7,7 +7,7 @@ import remove from "./subcommands/remove";
 export default {
     data: new SlashCommandBuilder()
         .setName('whitelist')
-        .setDescription(`Manages a user's whitelist of other users.`)
+        .setDescription(`Manages a users whitelist.`)
         .addSubcommand(add.data)
         .addSubcommand(view.data)
         .addSubcommand(remove.data),

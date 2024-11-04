@@ -6,6 +6,7 @@ import {
 } from "discord.js";
 import {viewWhitelistedIDsButton} from "../utils/command-utils";
 import {refreshUsersCache, retrieveDiscordUser} from "../../../cache";
+import {discordLoggingChannel} from "../../../index";
 
 
 export default {
@@ -21,36 +22,48 @@ export default {
 
     async execute(interaction: ChatInputCommandInteraction) {
         const user = await retrieveDiscordUser(interaction.user)
-        const steamIDs = user?.Whitelist64IDs
+        const existingSteamIDs = user?.Whitelist64IDs
         const steamID = interaction.options.getString('steamid')
 
         if (!steamID) {
             return await interaction.followUp({
                 content: `You must supply a value.`,
-                ephemeral: true
             })
         }
 
-        if (!steamIDs) {
+        if (!existingSteamIDs) {
             return await interaction.followUp({
                 content: `You do not have any whitelisted steamIDs.`,
             })
         }
 
-        const matchingSteamIDs = steamIDs.filter(item => item.steamID !== steamID)
+        const matchingSteamIDs = existingSteamIDs.filter(item => item.steamID !== steamID)
 
-        if (matchingSteamIDs.length === steamIDs.length) {
+        if (matchingSteamIDs.length === existingSteamIDs.length) {
             return interaction.followUp({
                 content: `The given steamID \`${steamID}\` does not exist among your whitelist IDs.`,
             })
         }
 
-        await UsersDB.findOneAndUpdate({ DiscordID: user.DiscordID }, {
+        const result = await UsersDB.findOneAndUpdate({ DiscordID: user.DiscordID }, {
             Whitelist64IDs: matchingSteamIDs,
         })
 
+        if (!result) {
+            return await interaction.followUp({
+                content: `Internal Server Error occurred when attempting to remove steamID`
+            })
+        }
+
         // State of the DB was changed, so the cache must be refreshed.
         await refreshUsersCache()
+
+        const name = interaction.user.globalName ? interaction.user.globalName : interaction.user.tag
+
+        discordLoggingChannel?.send({
+            content: `User ${name} removed a steamID from their whitelist \n`+
+                `SteamID: \`${steamID}\``
+        })
 
         return await interaction.followUp({
             content: `Successfully removed steamID \`${steamID}\` from your whitelisted IDs.\n`,

@@ -4,6 +4,7 @@ import { viewWhitelistedIDsButton } from "../utils/command-utils";
 import { incorrectSteamIDFormatResponse, steamID64Regex} from "../../../utils/utils";
 import env from "../../../load-env";
 import { refreshUsersCache, retrieveDiscordUser } from "../../../cache";
+import {discordLoggingChannel} from "../../../index";
 
 export default {
     data: new SlashCommandSubcommandBuilder()
@@ -75,6 +76,15 @@ export default {
         const newUser = await UsersDB.findOneAndUpdate({ DiscordID: user.DiscordID }, {
             Whitelist64IDs: steamIDs,
         })
+
+        if (newUser) {
+            const name = interaction.user.globalName ? interaction.user.globalName : interaction.user.tag
+
+            discordLoggingChannel?.send({
+                content: `User ${name} added a steamID to their whitelist \n`+
+                `SteamID:  \`${steamID}\`\n`
+            })
+        }
 
         // Updated the state of the database, so the cache must also be updated.
         await refreshUsersCache()

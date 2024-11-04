@@ -3,6 +3,7 @@ import { Subcommand } from "../../../types/commands";
 import { incorrectSteamIDFormatResponse, steamID64Regex } from "../../../utils/utils";
 import { UsersDB } from "../../../db/schema";
 import { refreshUsersCache } from "../../../cache";
+import {discordLoggingChannel} from "../../../index";
 
 const slashCommand = new SlashCommandSubcommandBuilder()
     .setName('update')
@@ -16,7 +17,6 @@ const slashCommand = new SlashCommandSubcommandBuilder()
 
 async function execute(interaction: ChatInputCommandInteraction) {
     let steamID = interaction.options.getString('steamid')
-
     // Since this is a required field, steamID should never be null, since discord won't allow you to put an empty value.
     // But to play nice with TypeScript I have to do this
     if (!steamID) {
@@ -33,6 +33,7 @@ async function execute(interaction: ChatInputCommandInteraction) {
             AdminRole64ID: steamID
         })
 
+
     if (!user) {
         await interaction.followUp({
             content: `Internal server error occurred`
@@ -40,8 +41,28 @@ async function execute(interaction: ChatInputCommandInteraction) {
         throw Error(`User not yet initialized in DB by the time data was attempted to be changed. A user must be initialized in the CB beforehand.`)
     }
 
+    // The user object returns the state of the user *before* it was updated.
+    const initialSteamID = user.AdminRole64ID
+
     // State of the DB was updated, so a refresh of the cache is required.
     await refreshUsersCache()
+
+    const name = interaction.user.globalName ? interaction.user.globalName : interaction.user.tag
+
+    if (initialSteamID) {
+        discordLoggingChannel?.send({
+            content: `User ${name} updated their admin steamID \n`+
+                `Old SteamID:  \`${initialSteamID}\`\n`+
+                `New SteamID: \`${steamID}\``
+        })
+
+    } else {
+        discordLoggingChannel?.send({
+            content: `User ${name} added an admin steamID \n`+
+                `SteamID: \`${steamID}\``
+        })
+    }
+
 
     return await interaction.followUp({
         content: `Admin steamID for user "${interaction.user.globalName}" successfully updated to \`${steamID}\``
