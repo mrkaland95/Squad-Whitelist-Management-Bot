@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { Subcommand } from "../../../types/commands";
-import {incorrectSteamIDFormatResponse, steamID64Regex} from "../../../utils/utils";
-import {UsersDB} from "../../../db/schema";
-import {loadUsers} from "../../../cache";
+import { incorrectSteamIDFormatResponse, steamID64Regex } from "../../../utils/utils";
+import { UsersDB } from "../../../db/schema";
+import { refreshUsersCache } from "../../../cache";
 
 const slashCommand = new SlashCommandSubcommandBuilder()
     .setName('update')
@@ -40,7 +40,8 @@ async function execute(interaction: ChatInputCommandInteraction) {
         throw Error(`User not yet initialized in DB by the time data was attempted to be changed. A user must be initialized in the CB beforehand.`)
     }
 
-    await loadUsers()
+    // State of the DB was updated, so a refresh of the cache is required.
+    await refreshUsersCache()
 
     return await interaction.followUp({
         content: `Admin steamID for user "${interaction.user.globalName}" successfully updated to \`${steamID}\``

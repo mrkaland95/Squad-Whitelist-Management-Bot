@@ -1,13 +1,11 @@
-import {Events, GatewayIntentBits} from "discord.js";
+import { Events, GatewayIntentBits } from "discord.js";
 import 'dotenv/config';
 import { loadEvents, loadSlashCommands } from './utils/utils.js'
 import { glob } from "glob";
 import CustomClient from "./types/custom-client";
 import mongoose from "mongoose";
 import env from "./load-env";
-import {initUserInDB, UsersDB} from "./db/schema";
-import {loadUsers, usersCache} from "./cache";
-import {generateWhitelistEmbed} from "./commands/whitelist/utils/command-utils";
+import { refreshUsersCache } from "./cache";
 
 
 /*
@@ -22,13 +20,11 @@ https://discordjs.guide/creating-your-bot/command-deployment.html#guild-commands
 
 */
 
-mongoose.connect(env.MONGO_DB_URL)
 
-mongoose.connection.once('open', async function() {
-	console.log(`MongoDB/Mongoose connection established successfully.`)
-})
+
 
 const token = env.DISCORD_APP_TOKEN
+const CACHE_UPDATE_INTERVAL_SECONDS = 30
 
 const client = new CustomClient({intents: [
 	GatewayIntentBits.Guilds,
@@ -43,10 +39,7 @@ async function main() {
 	const events = await loadEvents(eventFiles)
 	client.commands = await loadSlashCommands(commandFiles)
 
-	await loadUsers()
-
-	client.on(Events.InteractionCreate, async interaction  => {
-		if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
+	await refreshUsersCache()
 
 		const user = await UsersDB.findOne({DiscordID: interaction.user.id})
 

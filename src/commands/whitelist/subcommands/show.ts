@@ -1,8 +1,8 @@
 import {
     SlashCommandSubcommandBuilder, ChatInputCommandInteraction,
 } from "discord.js";
-import {retrieveDiscordUser} from "../../../db/schema";
 import { generateWhitelistEmbed } from "../utils/command-utils";
+import {retrieveDiscordUser} from "../../../cache";
 
 
 export default {

@@ -1,6 +1,5 @@
-import mongoose, { Document, Schema } from "mongoose";
-import { User } from "discord.js";
-import { loadUsers, usersCache} from "../cache";
+import mongoose, {Document, Schema} from "mongoose";
+import {User} from "discord.js";
 
 export interface IUser extends Document {
     DiscordID: string;
@@ -49,15 +48,3 @@ export async function initUserInDB(discordUser: User) {
     return newUser.save()
 }
 
-export async function retrieveDiscordUser(discordUser: User) {
-    let user = usersCache.get(discordUser.id)
-    if (!user) {
-        const users = await loadUsers()
-        user = users.get(discordUser.id)
-    }
-    if (!user) {
-        user = await initUserInDB(discordUser)
-    }
-
-    return user
-}

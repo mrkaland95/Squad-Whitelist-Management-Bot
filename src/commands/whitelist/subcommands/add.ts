@@ -1,9 +1,9 @@
-import {retrieveDiscordUser, UsersDB} from "../../../db/schema";
+import { UsersDB } from "../../../db/schema";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
-import {generateWhitelistEmbed, viewWhitelistedIDsButton} from "../utils/command-utils";
-import {incorrectSteamIDFormatResponse, steamID64Regex} from "../../../utils/utils";
+import { viewWhitelistedIDsButton } from "../utils/command-utils";
+import { incorrectSteamIDFormatResponse, steamID64Regex} from "../../../utils/utils";
 import env from "../../../load-env";
-import {loadUsers} from "../../../cache";
+import { refreshUsersCache, retrieveDiscordUser } from "../../../cache";
 
 export default {
     data: new SlashCommandSubcommandBuilder()
@@ -77,7 +77,7 @@ export default {
         })
 
         // Updated the state of the database, so the cache must also be updated.
-        await loadUsers()
+        await refreshUsersCache()
 
         return interaction.followUp({
             content: `Succesfully added steamID: \`${steamID}\`\n`+

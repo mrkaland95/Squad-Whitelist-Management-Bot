@@ -1,7 +1,6 @@
-import {ChatInputCommandInteraction, SlashCommandSubcommandBuilder} from "discord.js";
-import {Subcommand} from "../../../types/commands";
-import {retrieveDiscordUser, UsersDB} from "../../../db/schema";
-import {loadUsers, usersCache} from "../../../cache";
+import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { Subcommand } from "../../../types/commands";
+import { retrieveDiscordUser } from "../../../cache";
 
 const slashCommand = new SlashCommandSubcommandBuilder()
     .setName('show')

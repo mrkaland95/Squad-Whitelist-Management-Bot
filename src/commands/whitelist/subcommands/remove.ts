@@ -1,11 +1,11 @@
-import {retrieveDiscordUser, UsersDB} from "../../../db/schema";
+import {UsersDB} from "../../../db/schema";
 import {
     AutocompleteInteraction,
     ChatInputCommandInteraction,
     SlashCommandSubcommandBuilder
 } from "discord.js";
 import {viewWhitelistedIDsButton} from "../utils/command-utils";
-import { loadUsers } from "../../../cache";
+import {refreshUsersCache, retrieveDiscordUser} from "../../../cache";
 
 
 export default {
@@ -49,8 +49,8 @@ export default {
             Whitelist64IDs: matchingSteamIDs,
         })
 
-        // Update the cache
-        await loadUsers()
+        // State of the DB was changed, so the cache must be refreshed.
+        await refreshUsersCache()
 
         return await interaction.followUp({
             content: `Successfully removed steamID \`${steamID}\` from your whitelisted IDs.\n`,
