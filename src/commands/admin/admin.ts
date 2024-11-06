@@ -28,6 +28,7 @@ async function execute(interaction: ChatInputCommandInteraction) {
 
     for (const cmd of subCommands) {
         if (cmd.data.name === subCommand) {
+            console.log(`User ${interaction.user.globalName} used command: Admin ${cmd.data.name}`)
             return await cmd.execute(interaction)
         }
     }

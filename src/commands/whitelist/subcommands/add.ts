@@ -1,10 +1,10 @@
 import { UsersDB } from "../../../db/schema";
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { viewWhitelistedIDsButton } from "../utils/command-utils";
-import { incorrectSteamIDFormatResponse, steamID64Regex} from "../../../utils/utils";
+import {incorrectSteamIDFormatResponse, logToDiscord, steamID64Regex} from "../../../utils/utils";
 import env from "../../../load-env";
 import { refreshUsersCache, retrieveDiscordUser } from "../../../cache";
-import {discordLoggingChannel} from "../../../index";
+
 
 export default {
     data: new SlashCommandSubcommandBuilder()
@@ -80,10 +80,10 @@ export default {
         if (newUser) {
             const name = interaction.user.globalName ? interaction.user.globalName : interaction.user.tag
 
-            discordLoggingChannel?.send({
-                content: `User ${name} added a steamID to their whitelist \n`+
+            const msg = `User ${name} added a steamID to their whitelist \n`+
                 `SteamID:  \`${steamID}\`\n`
-            })
+
+            await logToDiscord(msg)
         }
 
         // Updated the state of the database, so the cache must also be updated.

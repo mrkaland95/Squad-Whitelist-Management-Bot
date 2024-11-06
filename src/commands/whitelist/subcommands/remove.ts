@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import {viewWhitelistedIDsButton} from "../utils/command-utils";
 import {refreshUsersCache, retrieveDiscordUser} from "../../../cache";
-import {discordLoggingChannel} from "../../../index";
+import {logToDiscord} from "../../../utils/utils";
 
 
 export default {
@@ -27,7 +27,7 @@ export default {
 
         if (!steamID) {
             return await interaction.followUp({
-                content: `You must supply a value.`,
+                content: `You must input a value.`,
             })
         }
 
@@ -60,10 +60,10 @@ export default {
 
         const name = interaction.user.globalName ? interaction.user.globalName : interaction.user.tag
 
-        discordLoggingChannel?.send({
-            content: `User ${name} removed a steamID from their whitelist \n`+
-                `SteamID: \`${steamID}\``
-        })
+        const msg = `User ${name} removed a steamID from their whitelist \n`+
+                    `SteamID: \`${steamID}\``
+
+        await logToDiscord(msg)
 
         return await interaction.followUp({
             content: `Successfully removed steamID \`${steamID}\` from your whitelisted IDs.\n`,

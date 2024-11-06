@@ -24,6 +24,8 @@ export default {
 
         for (const cmd of subCommands) {
             if (cmd.data.name === interaction.options.getSubcommand()) {
+                const value = interaction.options.getString('steamid')
+                console.log(`User ${interaction.user.globalName} used command: Whitelist - ${cmd.data.name} - Value: ${value}`)
                 await cmd.execute(interaction)
             }
         }

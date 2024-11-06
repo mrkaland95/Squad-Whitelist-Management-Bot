@@ -1,6 +1,7 @@
 import { Command } from "../types/commands";
 import { ChatInputCommandInteraction, Collection } from "discord.js";
 import { DiscordEvent } from "../types/events";
+import {discordLoggingChannel} from "../load-env";
 
 export async function importFile(filePath: string) {
   return require(filePath)?.default
@@ -32,6 +33,16 @@ export async function loadEvents(eventFiles: string[]) {
 	}
 	return events
 }
+
+
+export async function logToDiscord(message: string) {
+	if (!discordLoggingChannel) return;
+
+	return await discordLoggingChannel.send({
+		content: message
+	})
+}
+
 
 export function incorrectSteamIDFormatResponse(interaction: ChatInputCommandInteraction, steamID: string) {
 	const msg =

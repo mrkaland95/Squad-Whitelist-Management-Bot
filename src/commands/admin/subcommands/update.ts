@@ -1,9 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { Subcommand } from "../../../types/commands";
-import { incorrectSteamIDFormatResponse, steamID64Regex } from "../../../utils/utils";
+import {incorrectSteamIDFormatResponse, logToDiscord, steamID64Regex} from "../../../utils/utils";
 import { UsersDB } from "../../../db/schema";
 import { refreshUsersCache } from "../../../cache";
-import {discordLoggingChannel} from "../../../index";
 
 const slashCommand = new SlashCommandSubcommandBuilder()
     .setName('update')
@@ -49,20 +48,17 @@ async function execute(interaction: ChatInputCommandInteraction) {
 
     const name = interaction.user.globalName ? interaction.user.globalName : interaction.user.tag
 
+    let msg;
     if (initialSteamID) {
-        discordLoggingChannel?.send({
-            content: `User ${name} updated their admin steamID \n`+
+        msg = `User ${name} updated their admin steamID \n`+
                 `Old SteamID:  \`${initialSteamID}\`\n`+
                 `New SteamID: \`${steamID}\``
-        })
 
     } else {
-        discordLoggingChannel?.send({
-            content: `User ${name} added an admin steamID \n`+
-                `SteamID: \`${steamID}\``
-        })
+        msg = `User ${name} added an admin steamID \n`+ `SteamID: \`${steamID}\``
     }
 
+    await logToDiscord(msg)
 
     return await interaction.followUp({
         content: `Admin steamID for user "${interaction.user.globalName}" successfully updated to \`${steamID}\``
