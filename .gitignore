@@ -2,3 +2,4 @@
 /package-lock.json
 /dist
 .env
+/src/scripts/initiate-test-data.ts
