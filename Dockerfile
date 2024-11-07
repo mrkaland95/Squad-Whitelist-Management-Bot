@@ -1,18 +1,18 @@
-FROM node:18-alpine
-
-COPY . /app
+# Stage 1: Build
+FROM node:18-alpine AS build
+LABEL AUTHORS="Flaxelaxen"
 WORKDIR /app
-
-LABEL authors="Flaxelaxen"
-LABEL version="1.0"
-
-COPY package.json ./
-
+COPY package*.json ./
 RUN npm install
-
 COPY . .
+RUN npm run build
 
-RUN npx tsc
-
+# Stage 2: Runtime
+LABEL AUTHORS="Flaxelaxen"
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY package.json ./
+RUN npm install --only=production
 
 CMD ["node", "dist/index.js"]
