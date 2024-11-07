@@ -5,8 +5,8 @@ WORKDIR /app
 
 LABEL AUTHORS="Flaxelaxen"
 
-RUN npm install
-RUN npm run build
+RUN npm install && npm run build
+# RUN npm run build
 
 #WORKDIR /app
 #COPY package*.json ./
