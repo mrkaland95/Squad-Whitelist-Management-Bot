@@ -23,6 +23,7 @@ export function generateWhitelistEmbed(steamIDs: { steamID: string; name?: strin
         const steamID = steamIDs[i].steamID
         const name = steamIDs[i].name
 
+        // formattedSteamIDs += `${i + 1}.) [${steamID}](https://steamcommunity.com/profiles/${steamID})`
         formattedSteamIDs += `${i + 1}.) ${steamID}`
         if (name) {
             formattedNames += `${name}`
