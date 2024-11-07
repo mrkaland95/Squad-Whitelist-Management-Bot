@@ -12,7 +12,7 @@ RUN npm install
 
 COPY . .
 
-RUN tsc
+RUN npx tsc
 
 
 CMD ["node", "dist/index.js"]
