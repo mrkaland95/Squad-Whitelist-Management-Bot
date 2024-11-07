@@ -1,0 +1,16 @@
+node_modules
+*.log
+*.tmp
+*.swp
+
+dist/
+build/
+
+Dockerfile
+.dockerignore
+
+.git
+.gitignore
+
+.idea
+tt-discord-bot.zip
